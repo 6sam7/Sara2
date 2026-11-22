@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Simulador interactivo de caída libre y energía mecánica"><title>Simulador de caída libre rojo | NEXUS PHYSICS</title><link rel="stylesheet" href="style.css"></head>
+<body class="dashboard"><main class="wrap">
+<header class="top"><div><div class="brand">NEXUS PHYSICS</div><div class="tag">LABORATORIO DIGITAL</div></div><span class="status"><i class="dot"></i><span id="status">Listo para experimentar</span></span></header>
+<section class="hero"><div class="eyebrow">EXPERIMENTO 01</div><h1>Simulador de caída libre</h1><p class="subtitle">Explora el movimiento. Comprende la energía.</p></section>
+<div class="layout">
+<section class="panel">
+<h2>01 / Parámetros del experimento</h2><p class="hint">Ajusta las variables. Los valores se actualizan en tiempo real.</p>
+<div class="controls">
+<div class="control"><label for="mass">⚖️ Masa <output id="massOut">2.0</output></label><input id="mass" type="range" min="0.1" max="10000" step="0.1" value="2"><div class="unit">Kilogramos (kg)</div></div>
+<div class="control"><label for="height">↕ Altura inicial <output id="heightOut">20.0</output></label><input id="height" type="range" min="0.1" max="10000" step="0.1" value="20"><div class="unit">Metros (m)</div></div>
+<div class="control"><label for="gravity">◎ Gravedad <output id="gravityOut">9.81</output></label><input id="gravity" type="range" min="0.1" max="100" step="0.01" value="9.81"><div class="unit">m/s²</div></div>
+<div class="control"><label for="friction">〰 Fricción <output id="frictionOut">0.00</output></label><input id="friction" type="range" min="0" max="100" step="1" value="0"><div class="unit">Porcentaje de resistencia (0–100%)</div></div>
+</div>
+<div class="actions"><button class="btn" id="start">▶ Iniciar simulación</button><button class="btn secondary" id="pause">Ⅱ Pausar</button><button class="btn secondary" id="reset">↺ Reiniciar</button></div>
+<div class="scene"><div class="scene-label">VISTA DEL MOVIMIENTO · NEXUS PHYSICS</div>
+<svg viewBox="0 0 500 300" role="img" aria-label="Pelota que cae verticalmente"><defs><linearGradient id="ballGrad" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ff8791"/><stop offset="1" stop-color="#dc3545"/></linearGradient></defs>
+<path d="M90 34 V250" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-dasharray="5 8"/><path d="M65 250 H435" stroke="rgba(255,255,255,.7)" stroke-width="5" stroke-linecap="round"/><path d="M90 250 l-10 -13 h20z" fill="rgba(255,255,255,.65)"/><circle id="ballShadow" cx="90" cy="50" r="15" fill="rgba(0,0,0,.12)"/><circle id="ball" cx="90" cy="38" r="15" fill="url(#ballGrad)" stroke="white" stroke-width="2"/><path d="M130 40 H405" stroke="rgba(255,255,255,.22)" stroke-dasharray="4 7"/><text x="150" y="29" fill="var(--sceneText)" font-size="12">h₀ · altura inicial</text><text x="150" y="270" fill="var(--sceneText)" font-size="12">suelo</text></svg></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12px;color:var(--muted)"><span>Progreso de caída</span><strong id="progressText">0%</strong></div><div style="height:7px;background:var(--soft);border-radius:20px;overflow:hidden;margin-top:7px"><div id="progress" style="height:100%;width:0;background:var(--accent);transition:width .1s"></div></div>
+<div class="metrics"><div class="metric"><small>Tiempo</small><strong id="time">0.00 s</strong><em>segundos</em></div><div class="metric"><small>Velocidad</small><strong id="velocity">0.00</strong><em>m/s</em></div><div class="metric"><small>Distancia caída</small><strong id="distance">0.00</strong><em>metros</em></div></div>
+</section>
+<div class="side-stack">
+<section class="panel"><h2>02 / Energía del sistema</h2><p class="hint">Valores calculados a partir de las variables actuales.</p><div class="metrics"><div class="metric"><small>Potencial (Ep)</small><strong id="ep">0</strong><em>Joules (J)</em></div><div class="metric"><small>Cinética (Ec)</small><strong id="ec">0</strong><em>Joules (J)</em></div><div class="metric"><small>Mecánica (Em)</small><strong id="em">0</strong><em>Joules (J)</em></div></div>
+<div class="equations" style="margin-top:16px"><div class="eq"><span>ENERGÍA POTENCIAL</span>Ep = m · g · h</div><div class="eq"><span>ENERGÍA CINÉTICA</span>Ec = ½ · m · v²</div><div class="eq"><span>ENERGÍA MECÁNICA</span>Em = Ep + Ec</div></div></section>
+<section class="panel"><h2>03 / Gráfica de energía</h2><p class="hint">Evolución de Ep, Ec y Em durante la simulación.</p><div class="chart-wrap"><canvas id="chart" aria-label="Gráfica de energía"></canvas></div><div class="note">La gráfica se construye con los datos recogidos mientras avanza el experimento.</div></section>
+</div></div>
+<section class="panel" style="margin-top:20px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2>04 / Tabla de resultados</h2><p class="hint" style="margin-bottom:0">Registro de muestras tomadas durante la caída.</p></div><button class="btn secondary" id="clearTable">Limpiar tabla</button></div><div class="table-scroll" style="margin-top:12px"><table><thead><tr><th>Tiempo (s)</th><th>Distancia (m)</th><th>Velocidad (m/s)</th><th>Ep (J)</th><th>Ec (J)</th><th>Em (J)</th></tr></thead><tbody id="rows"></tbody></table></div><p class="note">Modelo didáctico: la fricción se representa como una reducción de la aceleración efectiva. Los resultados son aproximados.</p></section>
+<footer class="footer">Proyecto educativo · HTML estructura · CSS diseño · JavaScript interacción</footer>
+</main><script src="script.js"></script></body></html>

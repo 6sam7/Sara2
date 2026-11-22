@@ -1,0 +1,21 @@
+const $=id=>document.getElementById(id);
+const inputs={mass:$('mass'),height:$('height'),gravity:$('gravity'),friction:$('friction')};
+const outputs={mass:$('massOut'),height:$('heightOut'),gravity:$('gravityOut'),friction:$('frictionOut')};
+const state={running:false,t:0,last:0,raf:0,rows:[],history:[],lastRow:-1};
+function params(){return {m:+inputs.mass.value,h:+inputs.height.value,g:+inputs.gravity.value,f:+inputs.friction.value/100}}
+function fmt(n,d=2){return Number.isFinite(n)?n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d}):'0'}
+function refreshLabels(){for(const k in inputs)outputs[k].textContent=fmt(+inputs[k].value,k==='mass'||k==='height'?1:2);if(!state.running)renderState(0)}
+Object.values(inputs).forEach(el=>el.addEventListener('input',refreshLabels));
+function values(t){const p=params(),a=p.g*(1-p.f),fall=Math.min(p.h,.5*a*t*t),v=Math.sqrt(Math.max(0,2*a*fall));const ep=p.m*p.g*(p.h-fall),ec=.5*p.m*v*v;return {p,fall,v,ep,ec,em:ep+ec,a}}
+function renderState(t){const x=values(t),pct=x.p.h?x.fall/x.p.h:0; $('time').textContent=fmt(t,2)+' s';$('velocity').textContent=fmt(x.v,2);$('distance').textContent=fmt(x.fall,2);$('ep').textContent=fmt(x.ep,1);$('ec').textContent=fmt(x.ec,1);$('em').textContent=fmt(x.em,1);
+const top=38,bottom=245,travel=bottom-top;const cy=top+pct*travel;$('ball').setAttribute('cy',cy);$('ballShadow').setAttribute('cy',Math.min(260,cy+12));$('progress').style.width=(pct*100)+'%';$('progressText').textContent=Math.round(pct*100)+'%';
+drawChart();}
+function addRow(t){const x=values(t);const tr=document.createElement('tr');[fmt(t,2),fmt(x.fall,2),fmt(x.v,2),fmt(x.ep,1),fmt(x.ec,1),fmt(x.em,1)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});$('rows').prepend(tr);while($('rows').children.length>12)$('rows').lastElementChild.remove()}
+function drawChart(){const c=$('chart'),ctx=c.getContext('2d'),w=c.width=c.clientWidth*devicePixelRatio,h=c.height=c.clientHeight*devicePixelRatio;ctx.clearRect(0,0,w,h);const p=params(),maxE=Math.max(1,p.m*p.g*p.h),pad=26*devicePixelRatio;ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--line').trim()||'#999';ctx.lineWidth=1;for(let i=0;i<4;i++){let y=pad+i*(h-2*pad)/3;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}const pts=state.history.slice(-100);if(pts.length<2)return;const maxT=Math.max(1,pts[pts.length-1].t);const colors=['#dc3545','#f59e0b','#16a085'];['ep','ec','em'].forEach((key,j)=>{ctx.beginPath();pts.forEach((v,i)=>{const x=pad+(v.t/maxT)*(w-2*pad),y=h-pad-(v[key]/maxE)*(h-2*pad);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.strokeStyle=colors[j];ctx.lineWidth=2.5*devicePixelRatio;ctx.stroke()})}
+function tick(now){if(!state.running)return;const dt=Math.min(.05,(now-state.last)/1000||0);state.last=now;state.t+=dt;const x=values(state.t);if(state.history.length===0||state.t-state.history[state.history.length-1].t>=.12){state.history.push({t:state.t,ep:x.ep,ec:x.ec,em:x.em});if(state.history.length>250)state.history.shift()}if(state.t-state.lastRow>=.5){addRow(state.t);state.lastRow=state.t}renderState(state.t);if(x.fall>=x.p.h){state.running=false;$('start').textContent='↻ Volver a iniciar';if($('status'))$('status').textContent='Experimento terminado';return}state.raf=requestAnimationFrame(tick)}
+function start(){if(state.running)return;if(values(state.t).fall>=params().h)reset();state.running=true;state.last=performance.now();$('start').textContent='En marcha…';if($('status'))$('status').textContent='Simulación en curso';state.raf=requestAnimationFrame(tick)}
+function pause(){state.running=false;cancelAnimationFrame(state.raf);$('start').textContent='▶ Continuar';$('status').textContent='En pausa'}
+function reset(){state.running=false;cancelAnimationFrame(state.raf);state.t=0;state.lastRow=-1;state.history=[];$('rows').innerHTML='';$('start').textContent='▶ Iniciar simulación';if($('status'))$('status').textContent='Listo para experimentar';renderState(0);addRow(0)}
+$('start').addEventListener('click',start);$('pause').addEventListener('click',pause);$('reset').addEventListener('click',reset);
+$('clearTable').addEventListener('click',()=>$('rows').innerHTML='');
+window.addEventListener('resize',drawChart);refreshLabels();reset();
